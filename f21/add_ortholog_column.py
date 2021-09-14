@@ -11,7 +11,7 @@ f = open('genes.txt', 'w')
 f.write('\n'.join(genes))
 f.close()
 
-fml = {}
+ortholog = {}
 with open('diopt_results_2021-09-14 124826.csv') as f:
     reader = csv.reader(f)
     cur = 0
@@ -19,13 +19,13 @@ with open('diopt_results_2021-09-14 124826.csv') as f:
         cur += 1
         if cur == 1:
             continue
-        if row[1] not in fml:
-            fml[row[1]] = []
-        fml[row[1]].append(row[8]) 
-        fml[row[1]].sort()
+        if row[1] not in ortholog:
+            ortholog[row[1]] = []
+        ortholog[row[1]].append(row[8]) 
+        ortholog[row[1]].sort()
         
-for key in fml:
-    fml[key] = ' '.join(fml[key])
+for key in ortholog:
+    ortholog[key] = ' '.join(ortholog[key])
 
 with open('HPA_subcell_location_Plasma_2087.txt') as f:
     m = open('HPA_subcell_location_Plasma_with_orthologs.csv', 'w')
@@ -37,8 +37,8 @@ with open('HPA_subcell_location_Plasma_2087.txt') as f:
         if cur == 1:
             writer.writerow(row[:1] + ['Fly Ortholog'] + row[1:]) 
             continue
-        if row[0] not in fml:
-            fml[row[0]] = ''
-        writer.writerow(row[:1] + [fml[row[0]]] + row[1:]) 
+        if row[0] not in ortholog:
+            ortholog[row[0]] = ''
+        writer.writerow(row[:1] + [ortholog[row[0]]] + row[1:]) 
         
     
