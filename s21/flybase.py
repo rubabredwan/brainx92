@@ -1,46 +1,60 @@
 import csv
+import urllib.request
+import gzip
 
 class FlyBase:
-  annotation2name = {}
-  annotation2id = {}
-  id2name = {}
-  name2id = {}
-  def __init__(self):
-    with open('fbgn_annotation_ID.tsv') as f:
-      reader = csv.reader(f, delimiter='\t')
-      cur = 0
-      for row in reader:
-        cur += 1
-        if cur > 1:
-          ids = row[2].split(",") + row[3].split(",")
-          ann = row[4].split(",") + row[5].split(",")
-          self.name2id[row[0]] = row[2]
-          for _ in ann:
-            self.annotation2name[_] = row[0]
-            self.annotation2id[_] = row[2]
-          for _ in ids:
-            self.id2name[_] = row[0]
+	"""	
+		fbgn -> symbol
+		annotation -> fbgn 
+		symbol -> fbgn 
+	"""
+
+	fbgn = {}
+	annotation = {}
+	symbol = {}
+
+	def download_data(self):
+		urllib.request.urlretrieve('http://ftp.flybase.net/releases/current/precomputed_files/genes/fbgn_annotation_ID.tsv.gz', '.fbgn_annotation_ID.tsv.gz')
+		f = gzip.open('.fbgn_annotation_ID.tsv.gz', 'rt')
+		return f
+
+	def __init__(self):
+		reader = csv.reader(self.download_data(), delimiter='\t')
+		cur = 0
+		for row in reader:
+			if len(row) == 1:
+				continue
+			cur += 1
+			if cur > 1:
+				ids = row[2].split(",") + row[3].split(",")
+				ann = row[4].split(",") + row[5].split(",")
+				self.symbol[row[0]] = row[2]
+				for _ in ann:
+					self.annotation[_] = row[2]
+				for _ in ids:
+					self.fbgn[_] = row[0]
 
 
-  def get_name_from_id(self, ID):
-    if ID in self.id2name:
-      return self.id2name[ID]
+	def get_symbol(self, _):
+		if _ in self.symbol:
+			return _
+		elif _ in self.fbgn:
+			return self.fbgn[_]
+		elif _ in self.annotation:
+			return self.fbgn[self.annotation[_]]
 
-  def get_name_from_ann(self, ann):
-    if ann in self.annotation2name:
-      return self.annotation2name[ann]
-
-  def get_id_from_ann(self, ann):
-    if ann in self.annotation2id:
-      return self.annotation2id[ann]
-
-  def get_id_from_name(self, name):
-    name = name.strip()
-    if name in self.name2id:
-      return self.name2id[name]
+	def get_fbgn(self, _):
+		if _ in self.fbgn:
+			return _
+		elif _ in self.symbol:
+			return self.symbol[_]
+		elif _ in self.annotation:
+			return self.annotation[_]
 
 if __name__ == '__main__':
-  main = FlyBase()
-  print(main.get_name_from_id('FBgn0287621'))
-  print(main.get_id_from_ann('CG13200'))
+	main = FlyBase()
+	print(main.get_fbgn('FBgn0287621'))
+	print(main.get_symbol('FBgn0287621'))
+	print(main.get_symbol('CG13200'))
+	print(main.get_fbgn('CG13200'))
 
